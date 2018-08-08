@@ -14,9 +14,10 @@ public interface UpLoadFile {
 	 *  @param tempPath ��ʱ�ļ�Ŀ¼
 	 *  @return boolean ���ͳɹ�����true������ʧ�ܷ���false
 	 */
-	boolean sendData(@WebParam(name="file") String file,
+	/*boolean sendData(@WebParam(name="file") String file,
 			@WebParam(name="fileName")String fileName, 
-			@WebParam(name="tempPath") String tempPath) throws Exception;
+			@WebParam(name="tempPath") String tempPath) throws Exception;*/
+	boolean sendData(@WebParam(name="file") String file) throws Exception;
 	
 	void receiver(@WebParam(name="file") String file) throws Exception;
 	

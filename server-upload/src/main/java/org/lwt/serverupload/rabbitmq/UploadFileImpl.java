@@ -44,14 +44,14 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 public class UploadFileImpl implements UpLoadFile {
 	
 	
-	private String username = "yduser";										// �û���
+	/*private String username = "yduser";										// �û���
 	private String password = "yd@user";									// ����
 	private String vhost = "ydkpbmp";										// ��������
-	private String ip = "10.10.10.14";									// ����ip
-	/*private String username = "alice";										// �û���
+	private String ip = "10.10.10.14";		*/							// ����ip
+	private String username = "alice";										// �û���
 	private String password = "123456";									// ����
 	private String vhost = "vhost_01";										// ��������
-	private String ip = "192.168.1.3";*/
+	private String ip = "192.168.1.3";
 	private int port = 5672;												// ���ʶ˿�
 	private Connection connection = null;									// tcp����
 	private Channel channel = null;											// �ŵ�
@@ -93,76 +93,9 @@ public class UploadFileImpl implements UpLoadFile {
 	
 	
 	/********************************************************/
-	/*@Override
+	@Override
 	public boolean sendData(String path) throws Exception{
 		sourceFile = new File(path);
-		connection = getConnection(ip, port, username, password, vhost);	// ������������������
-		channel = connection.createChannel();								//����ŵ�
-		callbackQueueName = channel.queueDeclare().getQueue();				// ���ûص�����
-		
-		*//**
-		 * 	������Ӧ��Ϣ�� ���趨��ʱ���ڽ��յ���Ӧ�����ǳɹ����յ���Ӧ��
-		 * 	responseFlag��־����Ϊtrue
-		 * 	��ʾ����Ҫ�ط����ݣ��ڽ��յ�ʧ�ܵ���Ӧ��responseFlag��
-		 * 	־����Ϊfalse��ʾ��Ҫ���·���һ������
-		 *//*
-		try {
-			UploadFileImpl.this.channel.basicConsume(callbackQueueName, 
-					new DefaultConsumer(channel) {
-				@Override
-				public void handleDelivery(String consumerTag, 
-						Envelope envelope, BasicProperties properties,
-						byte[] body)
-						throws IOException {
-					System.err.println("���յ���Ӧ��==��");
-					String response = new String(body, "utf-8");
-					Map<String, Object> resMap = JsonUtil.
-							getMapFromJson(response);
-					if("0".equals(resMap.get("status"))) {					// ������ص�״̬��Ϊ0����ճɹ�
-						System.out.println("�ɹ�����");
-						responseFlag = true;
-						sendTime = 0;
-					}
-					System.out.println(response);
-				}
-			});
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		*//****************************************//*
-		sendTask();
-		System.out.println("sendTime "+sendTime+
-				" || responseFlag "+responseFlag);							// ������ɵ�һ������(�ط�����С��3����û���յ���Ӧ�����ѭ��)
-		while(sendTime <= 3 && !responseFlag) {
-			break;
-			System.out.println("����whileѭ��������");
-			if(firstRecv) {
-				
-				new CountDown(10, responseFlag);							// ��ʱ10����
-				System.out.println("�ж��Ƿ���Ҫ�ط�������");
-																			// �ڸ�����ʱ���ڽ��յ���Ӧ
-				if(responseFlag) {
-					firstRecv = false;
-				}else {														// û���ٸ�����ʱ���ڽ��յ���Ӧ
-					firstRecv = true;
-				}
-				if(firstRecv) {
-					System.err.println("�ط����ݡ�"+sendTime+"��");
-					sendTask();
-				}else {
-					
-					System.out.println("����Ҫ�ط�������");
-					return true;
-				}
-			}
-		}
-		return false;
-	}*/
-	@Override
-	public boolean sendData(String path, String fileName, String tempPath) throws Exception{
-		byte[] tempByte = org.lwt.serverupload.tools.EncryptUtil.decodeByteByBase64(path);
-		sourceFile = org.lwt.serverupload.tools.FileUtils.bytes2File(tempByte, tempPath, fileName);
-		//sourceFile = new File(path);
 		connection = getConnection(ip, port, username, password, vhost);	// ������������������
 		channel = connection.createChannel();								//����ŵ�
 		callbackQueueName = channel.queueDeclare().getQueue();				// ���ûص�����
@@ -181,12 +114,12 @@ public class UploadFileImpl implements UpLoadFile {
 						Envelope envelope, BasicProperties properties,
 						byte[] body)
 						throws IOException {
-					System.err.println("���յ���Ӧ��==��");
+					System.err.println("接收到响应");
 					String response = new String(body, "utf-8");
 					Map<String, Object> resMap = JsonUtil.
 							getMapFromJson(response);
 					if("0".equals(resMap.get("status"))) {					// ������ص�״̬��Ϊ0����ճɹ�
-						System.out.println("�ɹ�����");
+						System.out.println("发送成功");
 						responseFlag = true;
 						sendTime = 0;
 					}
@@ -198,19 +131,19 @@ public class UploadFileImpl implements UpLoadFile {
 		}
 		/****************************************/
 		sendTask();
+		int temp = 0;	// 用来防阻进入无限循环
 		System.out.println("sendTime "+sendTime+
 				" || responseFlag "+responseFlag);							// ������ɵ�һ������(�ط�����С��3����û���յ���Ӧ�����ѭ��)
-		int temp  = 0;														// ����һ������ֵ ������ֹ����ѭ��
 		while(sendTime <= 3 && !responseFlag) {
+			System.out.println("进入while循环 ");
 			temp++;
 			if(temp > 3) {
-				break;
+				return false;
 			}
-			System.out.println("����whileѭ��������");
 			if(firstRecv) {
 				
 				new CountDown(10, responseFlag);							// ��ʱ10����
-				System.out.println("�ж��Ƿ���Ҫ�ط�������");
+				System.out.println("判断是否需要重发数据");
 																			// �ڸ�����ʱ���ڽ��յ���Ӧ
 				if(responseFlag) {
 					firstRecv = false;
@@ -218,17 +151,18 @@ public class UploadFileImpl implements UpLoadFile {
 					firstRecv = true;
 				}
 				if(firstRecv) {
-					System.err.println("�ط����ݡ�"+sendTime+"��");
+					System.err.println("重发数据第  "+sendTime+" 次");
 					sendTask();
 				}else {
 					
-					System.out.println("����Ҫ�ط�������");
+					System.out.println("不需要重发");
 					return true;
 				}
 			}
 		}
 		return false;
 	}
+	
 	public void sendTask() {
 		try {
 			String exchangeName = "myexchanges05";							//����������
@@ -237,7 +171,7 @@ public class UploadFileImpl implements UpLoadFile {
 			List<byte[]> byteList = FileUtils.splitDemo(sourceFile);		//���ļ���֣�ÿ��Ϊ1024�ֽڣ�
 			toSend(byteList, sourceFile, channel, exchangeName, 
 					routingKey, callbackQueueName, null);					// ��������		
-			System.out.println("�������ݽ���������");
+			System.out.println("发送数据结束");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -273,14 +207,14 @@ public class UploadFileImpl implements UpLoadFile {
                 BasicProperties props = properties;
                 BasicProperties replyProps = new BasicProperties()
                 		.builder().build();
-                System.err.println("���յ����ݡ�����");
+                System.err.println("接收到响应");
                 if(isReSend) {												 // �ж��Ƿ�Ϊ�ط����ݣ�������ط����ѱ����ļ�ɾ���������ط�����
                 	recvList.clear();
                 	recvListMap.clear();
                 	if(targetFile != null && targetFile.exists()) {
                 		if(targetFile.delete()) {
-                			System.out.println("ɾ���Ա����ļ���"
-                					+ "��ʼ�����ط������ݡ�����");
+                			System.out.println("删除已存在文件"
+                					+ "准备重新接收数据");
                 		}
                 	}
                 	isReSend = false;
@@ -297,16 +231,15 @@ public class UploadFileImpl implements UpLoadFile {
                 		File temp = new File(path);
                 		if(!temp.exists()) {
                 			temp.mkdirs();
-                			System.err.println("����Ŀ¼������");
+                			System.err.println("创建文件成功");
                 		}
 						targetFile = new File(path+map.
 								get("fileName")+"."+map.get("ext"));			// �����ļ����·��
 						if(!targetFile.exists()) {
 							targetFile.createNewFile();
-							System.out.println("�����ļ�...");
+							System.out.println("创建文件成功1");
 						}
 					} catch (Exception e) {
-						
 						e.printStackTrace();
 					}
                 	openFileFlag = false;
@@ -320,9 +253,9 @@ public class UploadFileImpl implements UpLoadFile {
 					e.printStackTrace();
 				}
                 String response = "is ok...";								// ��Ӧ����Ϣ
-                System.err.println("��ʼMD5��֤��");
+                System.err.println("验证MD5值");
                 if(map.get("md5").equals(recMd5)) {
-                	System.err.println("MD5��֤ͨ����");
+                	System.err.println("MD5验证通过");
                 	recvList.add(bytes);									// ��֤ͨ�����ֽ�������ӵ�recvList��
                 	Map<String, Object> writeMap = new HashMap<>();
                 	writeMap.put("data", recvList.size()-1);				// ���recvList�ж������ݵ�������
@@ -335,7 +268,7 @@ public class UploadFileImpl implements UpLoadFile {
 						writeMap.put("packSize", packSize);
 						recvListMap.add(writeMap);
 					} catch (Exception e) {
-						System.out.println("����ת�������쳣������");
+						System.out.println("。。。");
 						e.printStackTrace();
 					}					
 	                try {
@@ -357,21 +290,21 @@ public class UploadFileImpl implements UpLoadFile {
                 	recvPackCount = 0;										// �����յ��İ���������Ϊ0
 					if(targetFile != null && targetFile.exists()) {
 						if(targetFile.delete()) {
-							System.out.println("������ɾ���ļ�������");
+							System.out.println("删除文件成功");
 						}
 					}
-                	System.out.println("����������");
+                	System.out.println("丢包");
                 }
                 if(recvPackCount == size.intValue()) {						// ������յ������ݰ������ͷ��͵�������ͬ���ʾû�ж���
                 	isReSend = true;										// ���ط���־����Ϊtrue,��ʾ�ڴ�֮���ٽ��յ�������Ϊ�ط�����
                 	recvPackCount = 0;										// �����յ��İ���������Ϊ0
-                	System.out.println("��������ȡ�");
+                	System.out.println("文件MD5验证通过");
                 	String fileMD5 = 
                 			EncryptUtil.getFileMD5String(recvList);			// ��ȡrecvList���ֽ������MD5ֵ�����ļ���md5ֵ��
                 	System.out.println("allMD5== "+map.get("allMD5"));
                 	System.out.println("fileMD5== "+fileMD5);
                 	if(map.get("allMD5").equals(fileMD5)) {					//��������ļ�md5У��ͨ���򷵻ؽ��ճɹ�����Ӧ��
-                		System.err.println("all md5���...");
+                		System.err.println("all md5验证。。。");
                     	Map<String, Object> responseMap = 
                     			new HashMap<>();
                     	responseMap.put("packid", map.get("packid"));
@@ -388,11 +321,11 @@ public class UploadFileImpl implements UpLoadFile {
                          * 
                          * **/
                     	try {
-                    		System.out.println("������Ӧ������");
+                    		/*System.out.println("验证文件MD5");
                     		byte[] recvBytes = new byte[(int) targetFile.length()];
                     		recvBytes = FileUtils.toByteArray(targetFile);
                     		String decodeStr = EncryptUtil.encodeByBase64(recvBytes);	// ���ļ��ֽ��������base64���ܺ���ַ���
-							
+*/							System.out.println("返回响应。。。");
                     		channel.basicPublish("", 
 									props.getReplyTo(), replyProps, 
 									response.getBytes("UTF-8"));
@@ -414,7 +347,7 @@ public class UploadFileImpl implements UpLoadFile {
                 	}else {
                 		try {
                 			if(targetFile.delete()) {
-                				System.out.println("ɾ���ļ��ɹ���");				// ��������ļ���md5ֵ��֤��ͨ�����򽫸��ļ�ɾ���󷵻ش�����Ӧ
+                				System.out.println("删除文件成功");				// ��������ļ���md5ֵ��֤��ͨ�����򽫸��ļ�ɾ���󷵻ش�����Ӧ
                 			}
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -440,7 +373,7 @@ public class UploadFileImpl implements UpLoadFile {
 			String routingKey, String callbackQueueName,
 			QueueingConsumer consumer){
 		//String fileMD5 = EncryptUtil.getFileMD5(file);					//��ȡ���ϴ��ļ���MD5
-		System.out.println("�������ݡ�");
+		System.out.println("开始发送数据。。。");
 		String fileMD5 = "";
 		FileInputStream in = null;
 		try {
@@ -470,7 +403,7 @@ public class UploadFileImpl implements UpLoadFile {
 		}
 		firstRecv = true;													// ��ʾ�����Ѿ����ͳɹ�
 		sendTime++;															// ���ʹ�����1
-		System.out.println("for�������ݽ���������");
+		System.out.println("for循环发送数据结束");
 		return System.currentTimeMillis();									// ���һ�����ݰ�������ɺ󷵻�һ��������ɵ�ʱ��
 	}
 	
