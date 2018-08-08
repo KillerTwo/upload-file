@@ -76,7 +76,7 @@ $(function(){
         formData: {"Authorization": localStorage.token}, //额外参数传递，可以没有
         chunked: true, //分片
         chunkSize: 1024, //分片大小指定
-        threads:10, //线程数量
+        threads:1, //线程数量
         disableGlobalDnd: true //禁用拖拽
     });
 

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.lwt.serverupload.rabbitmq.UploadFileImpl;
 import org.lwt.serverupload.tools.EncryptUtil;
+import org.lwt.serverupload.tools.FileUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,7 +47,7 @@ public class ReceivFile {
 			HttpServletRequest request) {
 		String contentType = file.getContentType();
 		String fileName = file.getOriginalFilename();
-		//UploadFileImpl uploadimpl = new UploadFileImpl();
+		
 		// 创建一个临时目录，用来存放上传的文件
 		String path = "";
 		try {
@@ -75,7 +76,15 @@ public class ReceivFile {
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
-        
+        File encodFile = new File(path+"\\"+fileName);
+        try {
+			byte[] bytes = FileUtils.toByteArray(encodFile);
+			String encodeStr = EncryptUtil.encodeByBase64(bytes);
+			UploadFileImpl uploadimpl = new UploadFileImpl();
+			uploadimpl.sendData(encodeStr, "C:\\Users\\Administrator\\Documents\\test\\recv\\temp\\", fileName);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		
 		/*try {
