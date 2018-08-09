@@ -1,4 +1,4 @@
-$(function(){
+/*$(function(){
 	console.log("执行上传文件。。。");
 	var size = 0;	//文件大小
 	var fileMd5 = '';  //	文件的MD5值
@@ -65,7 +65,7 @@ $(function(){
     uploader.on( "uploadSuccess", function( file ) {
         
         //$("#"+file.id).find(".progress").fadeOut("normal");
-       /* axios.post('http://localhost:8080/upload/chunk',{
+        axios.post('http://localhost:8080/upload/chunk',{
         	"fileMD5": file.wholeMd5, 
         	"isFinish": 0
         	})
@@ -74,7 +74,7 @@ $(function(){
         	})
         	.catch(function(err){
         	  console.log(err);
-        	});*/
+        	});
     	// 前端将所有的包已经发送完成则重新发送一个整个文件发送完成的请求给服务器，待服务器处理完成后返回文件是否正确被接收方接收的标志
         axios.get('http://localhost:8080/upload/chunk',{
         	  params:{
@@ -109,5 +109,32 @@ $(function(){
     })
 
 });
+*/
+
+window.onload = function(){
+	console.log("执行js");
+	var ws = new WebSocket("ws://localhost:8080/ws/websocket1/101");
+		ws.onopen = function()
+		{  
+			// 发送消息
+			console.log('open');
+			ws.send('hello');
+		};
+		ws.onmessage = function(evt)
+		{
+			// 监听消息
+		  console.log(evt.data)
+		};
+		ws.onclose = function(evt)
+		{
+		  // 关闭连接
+		  console.log('WebSocketClosed!');
+		};
+		ws.onerror = function(evt)
+		{
+		  // 发生错误
+		  console.log('WebSocketError!');
+		};
+}
 
 

@@ -1,4 +1,4 @@
-package org.lwt.serverupload.rabbitmq;
+package org.lwt.recvwebsocket.rabbitmq;
 
 import java.io.File;
 import java.io.FileInputStream;

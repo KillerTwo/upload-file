@@ -4,4 +4,31 @@
   <artifactId>upload-file</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
+  
+  <!-- <modules>
+  	<module>server-upload</module>
+    <module>recv-websocket</module>
+  </modules> -->
+  <dependencies>
+  		<!-- 添加thymeleaf -->
+        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+		<!-- <dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.6</version>
+		</dependency>
+		https://mvnrepository.com/artifact/com.alibaba/fastjson
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>1.2.47</version>
+		</dependency>
+		https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.7</version>
+		</dependency> -->
+  </dependencies>
+  
 </project>
