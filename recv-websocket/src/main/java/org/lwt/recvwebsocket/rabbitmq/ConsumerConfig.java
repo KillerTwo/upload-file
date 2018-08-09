@@ -41,7 +41,8 @@ public class ConsumerConfig implements RabbitListenerConfigurer {
  
     @Autowired
     private WebSocketServerEndpoint webSocketServerEndpoint;
- 
+    @Autowired
+    private Sender sender;
     @Bean
     public DefaultMessageHandlerMethodFactory handlerMethodFactory() {
         DefaultMessageHandlerMethodFactory factory = new DefaultMessageHandlerMethodFactory();
@@ -61,16 +62,18 @@ public class ConsumerConfig implements RabbitListenerConfigurer {
             public void onMessage(Message message, Channel channel) throws Exception {
             	System.err.println("接收响应");
             	/*****************发送响应消息*******************/
-            	Map<String, Object> responseMap = 
+            	/*Map<String, Object> responseMap = 
             			new HashMap<>();
             	responseMap.put("packid", "121");
             	responseMap.put("status", "0");
-            	String response = JsonUtil.getJsonFromMap(responseMap);
-            	com.rabbitmq.client.BasicProperties props =  (com.rabbitmq.client.BasicProperties) message.getMessageProperties();
+            	String response = JsonUtil.getJsonFromMap(responseMap);*/
+            	String response = "";
+            	//com.rabbitmq.client.BasicProperties props =  (com.rabbitmq.client.BasicProperties) message.getMessageProperties();
             	 BasicProperties replyProps = new BasicProperties()
                  		.builder().build();
+            	 System.out.println("回传队列名："+message.getMessageProperties().getReplyTo());
             	channel.basicPublish("", 
-						props.getReplyTo(), replyProps, 
+            			message.getMessageProperties().getReplyTo(), replyProps, 
 						response.getBytes("UTF-8"));
             	/***********************************/
                 byte[] body = message.getBody();
@@ -89,6 +92,43 @@ public class ConsumerConfig implements RabbitListenerConfigurer {
         return container;
     }
  
+    //rabbitmqTemplate监听返回队列的消息
+    /**
+     * 在此处消费者返回的响应，并做相应的处理（重发）
+     * @return
+     */
+    @Bean
+    public SimpleMessageListenerContainer replyListenerContainer() {
+    	 SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(connectionFactory);
+         //container.setQueues("");
+    	 container.setQueueNames("callbackqueue");
+         container.setMaxConcurrentConsumers(1);
+         container.setConcurrentConsumers(1);
+         container.setAcknowledgeMode(AcknowledgeMode.MANUAL); //设置确认模式手工确认
+         container.setMessageListener(new ChannelAwareMessageListener() {
+             @Override
+             public void onMessage(Message message, Channel channel) throws Exception {
+             	System.err.println("接收回传消息。。。");
+             	/***********************************/
+                 byte[] body = message.getBody();
+                 System.err.println("回传消息 : " + new String(body));
+                 //if(new String(body) == "") {   // 重发数据
+                	 sender.send("这是重发数据。。。");
+                 //}
+                 try {
+                 	// 使用socket推送接收到的消息。
+                     //webSocketServerEndpoint.sendMessageToAll(new String(body));
+                     channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);//确认消息成功消费
+                     //System.err.println("消息推送成功。。。");
+                 } catch (IOException e) {
+                     //System.err.println("消息推送前台出错：" + e.getMessage() + "/r/n重新发送");
+                     channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, true); //重新发送
+                 }
+             }
+         });
+         
+         return container;
+    }
     @Override
     public void configureRabbitListeners(RabbitListenerEndpointRegistrar rabbitListenerEndpointRegistrar) {
         rabbitListenerEndpointRegistrar.setMessageHandlerMethodFactory(handlerMethodFactory());

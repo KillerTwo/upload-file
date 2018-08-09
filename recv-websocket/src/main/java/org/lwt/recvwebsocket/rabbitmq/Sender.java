@@ -9,6 +9,7 @@ import org.lwt.recvwebsocket.websocket.WebSocketServerEndpoint;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessagePostProcessor;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.core.RabbitTemplate.ReturnCallback;
 import org.springframework.amqp.rabbit.support.CorrelationData;
@@ -52,21 +53,32 @@ public class Sender implements RabbitTemplate.ConfirmCallback, ReturnCallback {
     /**
      * 发送消息，不需要实现任何接口，供外部调用
      *
-     * @param messageVo
+     * @param msg 发送的数据
      */
     public void send(String msg) {
+    	
+    	
+    	
         CorrelationData correlationId = new CorrelationData(UUID.randomUUID().toString());
+        /*rabbitTemplate.convertSendAndReceive(RabbitConstant.EXCHANGE, RabbitConstant.RK_QUALIFICATION, msg.getBytes(), 
+        		correlationId);*/
         rabbitTemplate.convertAndSend(RabbitConstant.EXCHANGE, RabbitConstant.RK_QUALIFICATION, msg.getBytes(), 
         		(new MessagePostProcessor() {
 					
 					@Override
 					public Message postProcessMessage(Message message) throws AmqpException {
-						message.getMessageProperties().setReplyTo("callBackQueue"); 		// 设置默认队列
+						message.getMessageProperties().setReplyTo("callbackqueue"); 		// 设置默认队列
 						return message;
 					}
 				}),
         		correlationId);
         System.out.println("发送消息成功。。。");
-        webSocketServerEndpoint.sendMessageToAll(new String(msg));
+        //webSocketServerEndpoint.sendMessageToAll(new String(msg));
     }
+    
+   /* @RabbitListener(queues = "callbackqueue")
+	public void processMessage(String message) {
+    	System.out.println("接收到消息。");
+    	System.err.println("这是msg: "+message);
+	}*/
 }
