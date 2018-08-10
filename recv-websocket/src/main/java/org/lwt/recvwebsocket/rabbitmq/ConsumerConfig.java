@@ -1,8 +1,9 @@
-package org.lwt.recvwebsocket.rabbitmq;
+/*package org.lwt.recvwebsocket.rabbitmq;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 
+import org.lwt.recvwebsocket.finals.RabbitConstant;
 import org.lwt.recvwebsocket.websocket.WebSocketServerEndpoint;
 import org.lwt.serverupload.tools.JsonUtil;
 import org.springframework.amqp.core.AcknowledgeMode;
@@ -25,11 +26,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
  
-/**
- * 配置RabbitMq消费者
+*//**
+ * 	配置RabbitMq消费者
  * @author Administrator
  *
- */
+ *//*
  
 @Configuration
 @EnableRabbit
@@ -41,6 +42,7 @@ public class ConsumerConfig implements RabbitListenerConfigurer {
  
     @Autowired
     private WebSocketServerEndpoint webSocketServerEndpoint;
+    
     @Autowired
     private Sender sender;
     @Bean
@@ -60,22 +62,26 @@ public class ConsumerConfig implements RabbitListenerConfigurer {
         container.setMessageListener(new ChannelAwareMessageListener() {
             @Override
             public void onMessage(Message message, Channel channel) throws Exception {
-            	System.err.println("接收响应");
-            	/*****************发送响应消息*******************/
-            	/*Map<String, Object> responseMap = 
+            	System.err.println("接收消息");
+            	*//*****************发送响应消息*******************//*
+            	Map<String, Object> responseMap = 
             			new HashMap<>();
             	responseMap.put("packid", "121");
             	responseMap.put("status", "0");
-            	String response = JsonUtil.getJsonFromMap(responseMap);*/
-            	String response = "";
+            	String response = JsonUtil.getJsonFromMap(responseMap);
+            	String response = "这是响应消息<>";
             	//com.rabbitmq.client.BasicProperties props =  (com.rabbitmq.client.BasicProperties) message.getMessageProperties();
             	 BasicProperties replyProps = new BasicProperties()
                  		.builder().build();
-            	 System.out.println("回传队列名："+message.getMessageProperties().getReplyTo());
+            	 //System.out.println("回传队列名："+message.getMessageProperties().getReplyTo());
             	channel.basicPublish("", 
             			message.getMessageProperties().getReplyTo(), replyProps, 
 						response.getBytes("UTF-8"));
-            	/***********************************/
+            	channel.basicPublish("", 
+            			"callbackqueue", replyProps, 
+						response.getBytes("UTF-8"));
+            	
+            	*//***********************************//*
                 byte[] body = message.getBody();
                 System.out.println("receive msg : " + new String(body));
                 try {
@@ -93,10 +99,10 @@ public class ConsumerConfig implements RabbitListenerConfigurer {
     }
  
     //rabbitmqTemplate监听返回队列的消息
-    /**
-     * 在此处消费者返回的响应，并做相应的处理（重发）
-     * @return
-     */
+    *//**
+     * 	在此处消费者返回的响应，并做相应的处理（重发）
+     * 	@return
+     *//*
     @Bean
     public SimpleMessageListenerContainer replyListenerContainer() {
     	 SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(connectionFactory);
@@ -109,7 +115,7 @@ public class ConsumerConfig implements RabbitListenerConfigurer {
              @Override
              public void onMessage(Message message, Channel channel) throws Exception {
              	System.err.println("接收回传消息。。。");
-             	/***********************************/
+             	*//***********************************//*
                  byte[] body = message.getBody();
                  System.err.println("回传消息 : " + new String(body));
                  //if(new String(body) == "") {   // 重发数据
@@ -135,3 +141,4 @@ public class ConsumerConfig implements RabbitListenerConfigurer {
     }
 }
 
+*/

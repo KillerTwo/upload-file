@@ -9,86 +9,42 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 
-
+/**
+ * 	配置队列和交换机
+ * @author Administrator
+ *
+ */
 @Configuration
 public class RabbitMqConfig {
  
     /**
-     * 声明队列
+     *	 声明队列
      *
      * @return
      */
-    @Bean
-    public Queue queueTransaction() {
-        // true表示持久化该队列
-        return new Queue(RabbitConstant.QUEUE_TRANSACTION, false);
+	@Bean
+    public Queue queueSpringBoot() {
+        // true表示不持久化该队列
+        return new Queue(RabbitConstant.QUEUE_SPRING_BOOT, false);
     }
- 
-    @Bean
-    public Queue queueContract() {
-        // true表示持久化该队列
-        return new Queue(RabbitConstant.QUEUE_CONTRACT, false);
-    }
- 
-    @Bean
-    public Queue queueQualification() {
-        // true表示持久化该队列
-        return new Queue(RabbitConstant.QUEUE_QUALIFICATION, false);
-    }
-    @Bean
-    public Queue callBackQueue() {
-    	return new Queue("callbackqueue", false);
-    }
-    
+	
     /**
-     * 声明交互器
+     * 	声明交互器
      *
      * @return
      */
     @Bean
     DirectExchange directExchange() {
-        return new DirectExchange(RabbitConstant.EXCHANGE);
+        return new DirectExchange(RabbitConstant.MY_EXCHANGE);
     }
-    @Bean
-    public DirectExchange myExchange05() {
-    	return new DirectExchange(RabbitConstant.MY_EXCHANGE);
-    }
+    
     /**
-     * 绑定
-     *
+     * 	绑定
      * @return
      */
     @Bean
-    public Binding bindingTransaction() {
-        return BindingBuilder.bind(queueTransaction()).to(directExchange()).with(RabbitConstant.RK_TRANSACTION);
+    public Binding bindingMyExchange() {
+        return BindingBuilder.bind(queueSpringBoot()).to(directExchange()).with(RabbitConstant.PK_MY_KEY);
     }
- 
-    /**
-     * 绑定
-     *
-     * @return
-     */
-    @Bean
-    public Binding bindingContract() {
-        return BindingBuilder.bind(queueContract()).to(directExchange()).with(RabbitConstant.RK_CONTRACT);
-    }
- 
-    /**
-     * 绑定
-     *
-     * @return
-     */
-    @Bean
-    public Binding bindingQualification() {
-        return BindingBuilder.bind(queueQualification()).to(directExchange()).with(RabbitConstant.RK_QUALIFICATION);
-    }
-    /**
-     * 绑定
-     * @return
-     */
-    @Bean
-    public Binding bindingMyexchange() {
-    	return BindingBuilder.bind(myExchange05()).to(myExchange05()).with(RabbitConstant.MY_EXCHANGE);
-    }
- 
+
 }

@@ -131,17 +131,26 @@ public class FileUtils {
 		}
 		System.out.println(strs.length);*/
 		String path = "C:\\Users\\Administrator\\Documents\\test\\test03.txt";
-		String path01 = "E:\\package\\test03.txt";
-		File file01 = new File("C:\\Users\\Administrator\\Documents\\test\\recv\\mysql.zip");
-		
+		File file01 = new File("C:\\Users\\Administrator\\Documents\\test\\recv\\test03.txt");
 		File file = new File(path);
 		
+		FileOutputStream out = new FileOutputStream(file01);
+		//FileChannel outchannel = out.getChannel();
 		FileInputStream fi = new FileInputStream(file);
-		byte[] buffer = new byte[(int) file.length()];
+		FileChannel inchannel = fi.getChannel();
+		ByteBuffer buffer=ByteBuffer.allocate(1024);
+		int offset = 0;
+	    while((offset = inchannel.read(buffer)) != -1) {
+	    	byte[] bytes = buffer.array();
+	    	out.write(bytes);
+	    	buffer.clear();
+	    }
+		System.out.println("复制完成");
+		/*byte[] buffer = new byte[(int) file.length()];
 		byte[] buffer1 = toByteArray(path);
 		System.out.println(file.length());
 		File file02 = bytes2File(buffer,path01, "test03.txt");
-		System.out.println(file02.length());
+		System.out.println(file02.length());*/
 		/*FileInputStream in = new FileInputStream(file);
 		ByteBuffer[] buffers = ByteBuffer.allocate(capacity);*/
 		
@@ -164,13 +173,10 @@ public class FileUtils {
 				FileChannel out = new FileOutputStream(file01).getChannel()){
 			MappedByteBuffer buf = in.map(FileChannel.MapMode.READ_ONLY, 0, in.size());
 			out.write(buf);
-			buf.force();			// ǿ��д���ڴ�
-			System.out.println("�ļ�д����ɡ�����");
+			buf.force();
+			
 			in.close();
 			clean(buf);
-			
-			
-			
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -337,7 +343,7 @@ public class FileUtils {
 	 * 	�ر�MappedByteBUffer
 	 * 	@param buffer
 	 */
-	private static void clean(final MappedByteBuffer buffer) {
+	public static void clean(final MappedByteBuffer buffer) {
 		if (buffer == null) {
 			return;
 		}
