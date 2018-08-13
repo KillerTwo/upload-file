@@ -21,18 +21,18 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>
  * 虽然@Component默认是单例模式的，但springboot还是会为每个websocket连接初始化一个bean，所以可以用一个静态set保存起来。
  */
-@ServerEndpoint("/ws/websocket1/{userId}") //WebSocket客户端建立连接的地址
+@ServerEndpoint("/ws/websocket/{userId}") //WebSocket客户端建立连接的地址
 @Component
 @Slf4j
 public class WebSocketServerEndpoint {
  
     /**
-     * 存活的session集合（使用线程安全的map保存）
+     * 	存活的session集合（使用线程安全的map保存）
      */
     private static Map<String, Session> livingSessions = new ConcurrentHashMap<>();
  
     /**
-     * 建立连接的回调方法
+     *	 建立连接的回调方法
      *
      * @param session 与客户端的WebSocket连接会话
      * @param userId  用户名，WebSocket支持路径参数
@@ -45,11 +45,10 @@ public class WebSocketServerEndpoint {
  
     @OnMessage
     public void onMessage(String message, Session session, @PathParam("userId") String userId) {
-        System.out.println(userId + " : " + message);
-        sendMessageToAll(userId + " : " + message);
+        System.out.println("接收到用户"+userId+"发送过来的消息" + " : " + message);
+        // sendMessageToAll(userId + " : " + message);
+       // recvMessage(userId, message);
     }
- 
- 
     @OnError
     public void onError(Session session, Throwable error) {
         System.out.println("发生错误");
@@ -64,31 +63,54 @@ public class WebSocketServerEndpoint {
     }
  
     /**
-     * 单独发送消息
+     * 	单独发送消息
      *
      * @param session
      * @param message
      */
-    public void sendMessage(Session session, String message) {
+    /*public void sendMessage(Session session, String message) {
         try {
             session.getBasicRemote().sendText(message);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }*/
+    
+    /**
+     * 	单独发送消息
+     *
+     * @param userId	指定用户的id
+     * @param message	要发送的消息
+     * @return boolean  发送消息成功返回true，发送消息失败返回false
+     */
+    public boolean sendMessage(String userId, String message) {
+        try {
+        	Session session = livingSessions.get(userId);
+            session.getBasicRemote().sendText(message);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
+    
  
     /**
-     * 群发消息
+     * 	群发消息
      *
      * @param message
      */
     public void sendMessageToAll(String message) {
         livingSessions.forEach((sessionId, session) -> {
-            //发给指定的接收用户
-//            if (userId.equals(messageVo.getReceiveUserId())) {
-            sendMessage(session, message);
-//            }
+        	 try {
+				session.getBasicRemote().sendText(message);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
         });
     }
+   /* public String recvMessage(String userId, String message) {
+    	return message;
+    }*/
  
 }

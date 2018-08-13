@@ -55,7 +55,7 @@ public class Sender implements RabbitTemplate.ConfirmCallback, ReturnCallback {
         		correlationId);		// 发送数据接收消费者的响应数据
         
         //System.out.println("发送消息成功。。。");
-        System.out.println("发送的消息为："+msg);
+        //System.out.println("发送的消息为："+msg);
         //System.out.println("接收到消费者的响应消息："+response);
        return response;
     }

@@ -11,7 +11,7 @@ $(function(){
             id: '#attach',
             label: '选择文件',
         },
-        server: 'http://localhost:8080/chunk', //后台接收服务
+        server: '/chunk', //后台接收服务
         resize: false,
         formData: {
         	"Authorization": localStorage.token,
@@ -76,7 +76,7 @@ $(function(){
         	  console.log(err);
         	});*/
     	// 前端将所有的包已经发送完成则重新发送一个整个文件发送完成的请求给服务器，待服务器处理完成后返回文件是否正确被接收方接收的标志
-        axios.get('http://localhost:8080/chunk',{
+        axios.get('/chunk',{
         	  params:{
         		"fileMD5": file.wholeMd5, 
               	"isFinish": 0,
@@ -85,10 +85,15 @@ $(function(){
         	  }
         	})
         	.then(function(response){
-        		$("#"+file.id ).find("p.state").text("已上传");				// 将提示该为已上传
-        		//$("#"+file.id).find(".progress").fadeOut("normal");			// 上传成功，删除进度条。
-        		$("#"+file.id).find(".progress").hide();
-        		console.log("上传成功：", response);
+        		if(response.data == 0){
+        			$("#"+file.id ).find("p.state").text("已上传");				// 将提示该为已上传
+            		//$("#"+file.id).find(".progress").fadeOut("normal");			// 上传成功，删除进度条。
+            		$("#"+file.id).find(".progress").hide();
+            		console.log("上传成功：", response);
+        		}else{
+        			$("#"+file.id).find("p.state").text("上传失败");				// 将提示改为上传失败
+            		$("#"+file.id).find(".progress").hide();
+        		}
         	})
         	.catch(function(err){
         		console.log("上传失败。。。",err);
@@ -103,11 +108,10 @@ $(function(){
         uploader.cancelFile(file);
         uploader.removeFile(file,true);
     });
-
     //点击上传
     $("#upload").on("click", function() {
         uploader.upload();
-    })
+    });
 
 });
 

@@ -78,8 +78,14 @@ public class EncryptUtil {
 	 * @return String md5
 	 * @throws Exception
 	 */
-	public static String getMD5String(byte[] bytes) throws Exception {
-		MessageDigest messagedigest = MessageDigest.getInstance("MD5");
+	public static String getMD5String(byte[] bytes) {
+		MessageDigest messagedigest = null;
+		try {
+			messagedigest = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e) {
+			
+			e.printStackTrace();
+		}
         messagedigest.update(bytes);  
         return bufferToHex(messagedigest.digest());  
 	}
