@@ -63,7 +63,8 @@ $(function(){
     });
     //上传成功
     uploader.on( "uploadSuccess", function( file ) {
-        
+    	var inputValue = document.getElementById('userId');
+    	console.log(inputValue.value);
         //$("#"+file.id).find(".progress").fadeOut("normal");
        /* axios.post('http://localhost:8080/upload/chunk',{
         	"fileMD5": file.wholeMd5, 
@@ -81,7 +82,8 @@ $(function(){
         		"fileMD5": file.wholeMd5, 
               	"isFinish": 0,
               	"fileName": file.name,
-              	"ext": file.ext
+              	"ext": file.ext,
+              	'userId': inputValue.value
         	  }
         	})
         	.then(function(response){
@@ -110,6 +112,11 @@ $(function(){
     });
     //点击上传
     $("#upload").on("click", function() {
+    	var inputValue = document.getElementById('userId');
+    	console.log(inputValue.value);
+    	uploader.option( 'formData', {
+    	    'userId': inputValue.value
+    	});
         uploader.upload();
     });
 

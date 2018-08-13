@@ -76,8 +76,9 @@ public class SendController {
 			@RequestParam(value="fileMD5", required=false) String fileMd5,
 			@RequestParam(value="ext", required=false) String ext,
 			@RequestParam(value="fileName", required=false) String fileName,
+			@RequestParam(value="userId", required=false) String userId,
 			HttpServletRequest request) {
-		
+		System.out.println("userId:"+userId);
 		// 创建一个临时目录用来存放上传的文件
 		boolean success = false;	// 是否发送成功
 		String path = "";
@@ -115,23 +116,28 @@ public class SendController {
 			}
 			return "文件还未上传完成。";
 		}else {
+		  if(userId == null) {
+		    userId = "";
+		  }
+		  System.err.println("接收到的用户名："+userId);
 			// 最后一个包上传完成后在进行数据发送
 			// 发送确认消息，判断用户是否登录，是否可以发送数据
 			boolean isSend = false;
 			String isOk = "";
-			isOk = getJsonMap(fileName, ext, fileId, 0, null, fileMd5, 0, 1, 0);
+			isOk = getJsonMap(fileName, ext, fileId, 0, null, fileMd5, 0, userId, 1, 0);
 			String resOK  = sender.send(isOk);
 			int sendTimes = 0;
 			Map<String, Object> resOk = JsonUtil.getMapFromJson(resOK);
+			System.out.println("判断是否发送的响应信息："+resOK);
 			// 如果接收到错误的响应则进行最多三次数据重发
-			while((sendTimes < 3 && resOk == null) || (sendTimes < 3 && !"isOk".equals(resOk.get("status")))) {
+			while((sendTimes < 3 && resOk == null) || (sendTimes < 3 && !"isOK".equals(resOk.get("status")))) {
 				System.out.println("recvFile进入while循环 ");
 				sendTimes++;
 				resOK = sender.send(isOk);
 				resOk = JsonUtil.getMapFromJson(resOK);
 			}
 			if(resOk != null) {
-				isSend = "isOk".equals(resOk.get("status")) ? true : false;
+				isSend = "isOK".equals(resOk.get("status")) ? true : false;
 			}else {
 				isSend = false;
 			}
@@ -149,7 +155,7 @@ public class SendController {
 							byte[] bytes = new byte[length];
 							bytes = Arrays.copyOf(buff, length);
 							String message = "";
-							message = getJsonMap(fileName, ext, fileId, packCount, bytes, fileMd5, packnum, 1, 1);
+							message = getJsonMap(fileName, ext, fileId, packCount, bytes, fileMd5, packnum, userId, 1, 1);
 							String res  = sender.send(message);
 							int sendTime = 0;
 							Map<String, Object> resMap = JsonUtil.getMapFromJson(res);
@@ -172,7 +178,7 @@ public class SendController {
 							// 数据包已经发完，发一个确认包
 							packnum--;
 							String message = "";
-							message = getJsonMap(fileName, ext, fileId, packCount, null, fileMd5, packnum, 0, 1);
+							message = getJsonMap(fileName, ext, fileId, packCount, null, fileMd5, packnum, userId, 0, 1);
 							String res  = sender.send(message);
 							int sendTime = 0;
 							Map<String, Object> resMap = JsonUtil.getMapFromJson(res);
@@ -209,6 +215,7 @@ public class SendController {
 					return "1";
 				}
 			}else {
+			  System.out.println("用户不在线。");
 				// 用户不在线
 				if(new File(path + "/" + fileName).exists()) {
 					if(new File(path + "/" + fileName).delete()) {
@@ -223,7 +230,7 @@ public class SendController {
 	}
 	
 	private String getJsonMap(String fileName,String ext,String fileId,long packCount,byte[] temp,
-			String fileMd5, long packnum, int idEnd, int isLogin){
+			String fileMd5, long packnum, String userId, int idEnd, int isLogin){
 		// 发送一个字节数组
     	Map<String, Object> bytePackge = new HashMap<>();	// 皴法，封装一个字节包发送到RabbitMq
     	bytePackge.put("fileName", fileName);
@@ -237,7 +244,7 @@ public class SendController {
     	bytePackge.put("packnum", packnum);
     	bytePackge.put("data", temp != null ? EncryptUtil.encodeByBase64(temp) : "");
     	bytePackge.put("isEnd", idEnd);
-    	bytePackge.put("userId", "admin");
+    	bytePackge.put("userId", userId);
     	bytePackge.put("isLogin", isLogin);
     	String message = JsonUtil.getJsonFromMap(bytePackge);
     	return message;

@@ -39,7 +39,9 @@ public class WebSocketServerEndpoint {
      */
     @OnOpen
     public void onOpen(Session session, @PathParam("userId") String userId) {
-        livingSessions.put(session.getId(), session);
+        //livingSessions.put(session.getId(), session);
+      System.out.println("session.getId:"+session.getId());
+        livingSessions.put(userId, session);
         System.out.println(userId + "进入连接");
     }
  
@@ -86,8 +88,12 @@ public class WebSocketServerEndpoint {
     public boolean sendMessage(String userId, String message) {
         try {
         	Session session = livingSessions.get(userId);
-            session.getBasicRemote().sendText(message);
-            return true;
+        	if(session != null) {
+        	  session.getBasicRemote().sendText(message);
+        	  return true;
+        	}else {
+        	  return false;
+        	}
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -102,7 +108,7 @@ public class WebSocketServerEndpoint {
      */
     public void sendMessageToAll(String message) {
         livingSessions.forEach((sessionId, session) -> {
-        	 try {
+       try {
 				session.getBasicRemote().sendText(message);
 			} catch (IOException e) {
 				e.printStackTrace();
